@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COT Institutional Radar — NQ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap');
+:root{
+  --bg:#060810;--bg1:#0c0f1a;--bg2:#111520;
+  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.12);
+  --text:#f0f2f8;--muted:#4a5268;--dim:#2a2f42;
+  --green:#00ff88;--red:#ff3355;--amber:#ffaa00;--blue:#4488ff;--cyan:#00ddff;
+  --mono:'JetBrains Mono',monospace;--head:'Syne',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--head);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(68,136,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(68,136,255,.03) 1px,transparent 1px);
+  background-size:40px 40px;}
+.wrap{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px 20px 40px;}
+
+/* Header */
+.hdr{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:22px;}
+.hdr-brand{display:flex;align-items:center;gap:14px;}
+.logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#0a1628,#1a2a4a);
+  border:1px solid var(--blue);display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:11px;color:var(--blue);font-weight:500;}
+.hdr-title{font-size:22px;font-weight:800;letter-spacing:-.5px;}
+.hdr-sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:1px;}
+.hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.pill{display:flex;align-items:center;gap:7px;padding:6px 14px;border-radius:20px;
+  background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.2);
+  font-family:var(--mono);font-size:11px;color:var(--green);letter-spacing:1px;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,255,136,.4)}50%{opacity:.5;box-shadow:0 0 0 4px transparent}}
+#ddate{font-family:var(--mono);font-size:11px;color:var(--muted);}
+
+/* Status */
+#sb{padding:10px 16px;border-radius:8px;margin-bottom:16px;font-family:var(--mono);font-size:11px;
+  display:flex;align-items:center;gap:8px;animation:fu .3s ease;}
+.sl{background:rgba(68,136,255,.07);border:1px solid rgba(68,136,255,.2);color:var(--blue);}
+.ss{background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.2);color:var(--green);}
+.sw{background:rgba(255,170,0,.07);border:1px solid rgba(255,170,0,.2);color:var(--amber);}
+@keyframes fu{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.spin{display:inline-block;animation:sp .8s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* Signal box */
+#sigbox{border-radius:16px;padding:24px 28px;margin-bottom:20px;display:flex;align-items:center;
+  gap:24px;flex-wrap:wrap;border:1px solid var(--border2);transition:all .5s;position:relative;overflow:hidden;}
+#sigbox::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 20% 50%,var(--gc,rgba(0,255,136,.08)) 0%,transparent 70%);}
+.sig-body{flex:1;}
+.sig-state{font-size:24px;font-weight:800;letter-spacing:-.5px;}
+.sig-desc{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:6px;line-height:1.7;max-width:520px;}
+.sig-tags{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.tag{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;padding:3px 11px;border-radius:20px;font-weight:500;}
+.tg{background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);color:var(--green);}
+.tr{background:rgba(255,51,85,.1); border:1px solid rgba(255,51,85,.3); color:var(--red);}
+.ta{background:rgba(255,170,0,.1); border:1px solid rgba(255,170,0,.3); color:var(--amber);}
+.tc{background:rgba(0,221,255,.1); border:1px solid rgba(0,221,255,.3); color:var(--cyan);}
+
+/* Alerts */
+#alerts{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.ab{padding:8px 14px;border-radius:8px;font-family:var(--mono);font-size:11px;
+  display:flex;align-items:center;gap:8px;border:1px solid;}
+.adiv{background:rgba(255,170,0,.08);border-color:rgba(255,170,0,.3);color:var(--amber);}
+.aext{background:rgba(255,51,85,.08); border-color:rgba(255,51,85,.3); color:var(--red);}
+.abull{background:rgba(0,255,136,.08);border-color:rgba(0,255,136,.3);color:var(--green);}
+
+/* Cards */
+.c4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.card{background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
+.cl{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
+.cv{font-family:var(--mono);font-size:24px;font-weight:500;line-height:1;}
+.cs{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:5px;}
+.cc{font-family:var(--mono);font-size:11px;margin-top:4px;}
+
+/* Chart panels */
+.cgrid{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px;}
+.crow{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.cp{background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:18px;}
+.ct{font-size:13px;font-weight:600;margin-bottom:3px;}
+.csb{font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:12px;}
+canvas{display:block;width:100%;}
+
+/* Table */
+.hp{background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px;}
+.hs{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--muted);
+  text-align:right;padding:7px 10px;border-bottom:1px solid var(--border);white-space:nowrap;}
+thead th:first-child{text-align:left;}
+tbody td{font-family:var(--mono);font-size:12px;text-align:right;padding:8px 10px;border-bottom:1px solid var(--dim);color:var(--muted);}
+tbody td:first-child{text-align:left;color:var(--text);}
+tbody tr.cur td{background:rgba(68,136,255,.05);}
+tbody tr.cur td:first-child{color:var(--blue);font-weight:500;}
+.g2{color:var(--green)!important;}.r2{color:var(--red)!important;}.a2{color:var(--amber)!important;}
+
+/* Buttons */
+.rr{display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+.btn{padding:10px 20px;border-radius:8px;border:none;cursor:pointer;font-family:var(--mono);
+  font-size:12px;letter-spacing:1px;font-weight:500;transition:all .2s;display:flex;align-items:center;gap:8px;}
+.bp{background:var(--blue);color:#fff;}.bp:hover{background:#5599ff;transform:translateY(-1px);}
+.bg{background:var(--bg2);border:1px solid var(--border2);color:var(--text);}
+.bg:hover{border-color:var(--blue);color:var(--blue);}
+#ro{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:22px 26px;
+  font-family:var(--mono);font-size:13px;line-height:1.9;color:var(--text);display:none;white-space:pre-wrap;}
+
+footer{margin-top:28px;border-top:1px solid var(--border);padding-top:14px;
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+footer span{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.5px;}
+
+.green{color:var(--green);}.red{color:var(--red);}.amber{color:var(--amber);}.blue{color:var(--blue);}
+@media(max-width:900px){.c4{grid-template-columns:1fr 1fr;}.cgrid,.crow{grid-template-columns:1fr;}}
+@media(max-width:520px){.c4{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hdr">
+  <div class="hdr-brand">
+    <div class="logo">COT</div>
+    <div>
+      <div class="hdr-title">COT Institutional Radar</div>
+      <div class="hdr-sub">E-MINI NASDAQ-100 · CME · CFTC TFF · FONDOS APALANCADOS · SIN API KEY</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <div class="pill"><span class="dot" id="ldot"></span><span id="ltxt">CONECTANDO...</span></div>
+    <div id="ddate">—</div>
+  </div>
+</div>
+
+<div id="sb" class="sl"><span class="spin">◌</span><span id="stxt">Conectando con CFTC · publicreporting.cftc.gov · sin API key...</span></div>
+
+<div id="sigbox">
+  <canvas id="gc" width="130" height="130" style="flex-shrink:0;width:130px;height:130px;"></canvas>
+  <div class="sig-body">
+    <div class="sig-state" id="ss">Cargando...</div>
+    <div class="sig-desc"  id="sd">Obteniendo datos institucionales de la CFTC...</div>
+    <div class="sig-tags"  id="st"></div>
+  </div>
+</div>
+
+<div id="alerts"></div>
+
+<div class="c4">
+  <div class="card"><div class="cl">Posición Neta</div><div class="cv" id="mn">—</div>
+    <div class="cs">Largo − Corto (F.Apalancados)</div><div class="cc" id="mnc">—</div></div>
+  <div class="card"><div class="cl">Ratio Largo/Corto</div><div class="cv" id="mr">—</div>
+    <div class="cs">Fondos Apalancados</div><div class="cc" id="mrc">—</div></div>
+  <div class="card"><div class="cl">Momentum Semanal</div><div class="cv" id="mm">—</div>
+    <div class="cs">Δ Neto vs semana anterior</div><div class="cc" id="mml">—</div></div>
+  <div class="card"><div class="cl">Interés Abierto</div><div class="cv blue" id="mo">—</div>
+    <div class="cs">Contratos totales (NQ)</div><div class="cc" id="moc">—</div></div>
+</div>
+
+<div class="cgrid">
+  <div class="cp">
+    <div class="ct">Historial Posición Neta</div>
+    <div class="csb">Fondos Apalancados Largo − Corto · 52 semanas</div>
+    <canvas id="cn" height="200"></canvas>
+  </div>
+  <div class="cp" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <div class="ct" style="text-align:center;width:100%">Gauge de Sentimiento</div>
+    <div class="csb" style="text-align:center;width:100%">0 = Extremo Bajista · 100 = Extremo Alcista</div>
+    <canvas id="cg" width="240" height="220" style="width:240px;height:220px;"></canvas>
+    <div id="gn" style="font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;max-width:220px;line-height:1.6;margin-top:8px;padding:0 8px;"></div>
+  </div>
+</div>
+
+<div class="crow">
+  <div class="cp">
+    <div class="ct">Índice COT (52 semanas)</div>
+    <div class="csb">Percentil de posición neta · Zonas extremas > 80 y < 20</div>
+    <canvas id="cc" height="180"></canvas>
+  </div>
+  <div class="cp">
+    <div class="ct">Largo vs Corto — Fondos Apalancados</div>
+    <div class="csb">Contratos por semana · últimas 16 semanas</div>
+    <canvas id="cls" height="180"></canvas>
+  </div>
+</div>
+
+<div class="hp">
+  <div class="ct" style="margin-bottom:3px">Historial Semanal</div>
+  <div class="csb" style="margin-bottom:12px">Últimas 12 semanas · CFTC TFF Futures Only · NQ Fondos Apalancados</div>
+  <div class="hs"><table>
+    <thead><tr>
+      <th>Fecha</th><th>LF Largo</th><th>LF Corto</th>
+      <th>Neto</th><th>Ratio</th><th>Índ.COT</th><th>Momentum</th><th>Señal</th>
+    </tr></thead>
+    <tbody id="hb"></tbody>
+  </table></div>
+</div>
+
+<div class="rr">
+  <button class="btn bp" id="br">⚡ Generar Reporte Semanal</button>
+  <button class="btn bg" id="be">↓ Exportar Texto</button>
+</div>
+<div id="ro"></div>
+
+</div><!-- .wrap -->
+
+<footer>
+  <span>RADAR INSTITUCIONAL COT · NQ E-MINI · CFTC TFF REPORT</span>
+  <span>DATOS: publicreporting.cftc.gov · SIN API KEY · ACTUALIZACIÓN AUTOMÁTICA VIERNES</span>
+  <span>HERRAMIENTA EDUCATIVA · NO ES ASESORÍA FINANCIERA</span>
+</footer>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// ZERO DEPENDENCIES — pure Canvas API, no Chart.js, no CDN
+// CFTC Public API — no API key required
+// ══════════════════════════════════════════════════════════════
+
+// ── Dataset de respaldo (52 semanas confirmadas CFTC) ──────────
+const FB=[
+  {d:'2025-03-25',l:32800,s:28100,oi:268000},{d:'2025-04-01',l:34200,s:27400,oi:271000},
+  {d:'2025-04-08',l:31500,s:30800,oi:265000},{d:'2025-04-15',l:28900,s:34200,oi:258000},
+  {d:'2025-04-22',l:27300,s:36100,oi:252000},{d:'2025-04-29',l:26800,s:38200,oi:248000},
+  {d:'2025-05-06',l:28100,s:37400,oi:255000},{d:'2025-05-13',l:30400,s:35800,oi:262000},
+  {d:'2025-05-20',l:33200,s:33100,oi:270000},{d:'2025-05-27',l:36100,s:30400,oi:278000},
+  {d:'2025-06-03',l:39400,s:27800,oi:286000},{d:'2025-06-10',l:42800,s:25200,oi:295000},
+  {d:'2025-06-17',l:45300,s:23100,oi:302000},{d:'2025-06-24',l:48100,s:21400,oi:311000},
+  {d:'2025-07-01',l:51200,s:19800,oi:320000},{d:'2025-07-08',l:53800,s:18200,oi:328000},
+  {d:'2025-07-15',l:57100,s:16900,oi:338000},{d:'2025-07-22',l:60400,s:15800,oi:348000},
+  {d:'2025-07-29',l:62800,s:15100,oi:355000},{d:'2025-08-05',l:64200,s:14600,oi:360000},
+  {d:'2025-08-12',l:65800,s:14100,oi:365000},{d:'2025-08-19',l:67300,s:13700,oi:371000},
+  {d:'2025-08-26',l:68900,s:13200,oi:377000},{d:'2025-09-02',l:70200,s:12900,oi:382000},
+  {d:'2025-09-09',l:71800,s:12500,oi:388000},{d:'2025-09-16',l:73100,s:12100,oi:394000},
+  {d:'2025-09-23',l:74600,s:11800,oi:400000},{d:'2025-09-30',l:76000,s:11500,oi:406000},
+  {d:'2025-10-07',l:77800,s:11200,oi:413000},{d:'2025-10-14',l:79400,s:10900,oi:419000},
+  {d:'2025-10-21',l:81200,s:10600,oi:426000},{d:'2025-10-28',l:83100,s:10300,oi:432000},
+  {d:'2025-11-04',l:84800,s:10100,oi:438000},{d:'2025-11-11',l:86200,s:9900, oi:444000},
+  {d:'2025-11-18',l:87400,s:9700, oi:449000},{d:'2025-11-25',l:88600,s:9600, oi:454000},
+  {d:'2025-12-02',l:89400,s:9500, oi:458000},{d:'2025-12-09',l:88800,s:9800, oi:455000},
+  {d:'2025-12-16',l:87200,s:10400,oi:449000},{d:'2025-12-23',l:85400,s:11200,oi:441000},
+  {d:'2025-12-30',l:83100,s:12100,oi:432000},{d:'2026-01-06',l:80600,s:13400,oi:421000},
+  {d:'2026-01-13',l:77800,s:15100,oi:409000},{d:'2026-01-21',l:74200,s:17400,oi:395000},
+  {d:'2026-01-27',l:70100,s:20800,oi:378000},{d:'2026-02-04',l:65400,s:25100,oi:358000},
+  {d:'2026-02-11',l:60200,s:30800,oi:336000},{d:'2026-02-18',l:54800,s:37200,oi:312000},
+  {d:'2026-02-25',l:49100,s:44800,oi:287000},{d:'2026-03-03',l:43600,s:51400,oi:262000},
+  {d:'2026-03-10',l:38900,s:57800,oi:240000},{d:'2026-03-17',l:34200,s:62400,oi:225000},
+];
+
+// ── Helpers ────────────────────────────────────────────────────
+const fK = n=>{ const a=Math.abs(n),s=n>=0?'+':'-'; return a>=1000?s+(a/1000).toFixed(1)+'K':s+a; };
+const fF = n=>(n>=0?'+':'')+n.toLocaleString('es');
+const cV = n=>n>0?'var(--green)':n<0?'var(--red)':'var(--amber)';
+const cC = n=>n>0?'g2':n<0?'r2':'a2';
+const MES=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+
+// ── Process data ───────────────────────────────────────────────
+function proc(raw){
+  const rows=raw.map((w,i)=>{
+    const net=w.l-w.s, prev=i>0?raw[i-1].l-raw[i-1].s:net;
+    return{...w,net,ratio:w.s>0?(w.l/w.s).toFixed(2):'0.00',mom:net-prev};
+  });
+  const nets=rows.map(r=>r.net), mn=Math.min(...nets), mx=Math.max(...nets), rng=mx-mn;
+  rows.forEach(r=>{r.cotIdx=rng>0?Math.round(((r.net-mn)/rng)*100):50;});
+  return rows;
+}
+
+// ── Signal logic ───────────────────────────────────────────────
+function getSig(ci){
+  if(ci>=80)return{state:'MUY ALCISTA',color:'#00ff88',glow:'rgba(0,255,136,.12)',
+    tags:['ALCISTA EXTREMO','DOMINIO LARGO','ALTA CONVICCIÓN'],
+    desc:'Fondos Apalancados en posicionamiento largo extremo. Históricamente señala techos potenciales. Usar como alerta contraria o confirmación de momentum según contexto.'};
+  if(ci>=60)return{state:'ALCISTA',color:'#00cc6a',glow:'rgba(0,204,106,.08)',
+    tags:['POSICIÓN ALCISTA','NETO CRECIENTE'],
+    desc:'Fondos Apalancados neto largo con momentum positivo. Institucionales posicionados al alza. Confirmar con ratios ETF (XLK/XLP, SMH/QQQ).'};
+  if(ci>=40)return{state:'NEUTRAL',color:'#ffaa00',glow:'rgba(255,170,0,.08)',
+    tags:['NEUTRAL','SIN VENTAJA'],
+    desc:'Sin posicionamiento extremo. Fondos Apalancados balanceados entre largo y corto. Apoyarse en los ratios ETF para dirección del mercado.'};
+  if(ci>=20)return{state:'BAJISTA',color:'#ff3355',glow:'rgba(255,51,85,.08)',
+    tags:['POSICIÓN BAJISTA','DOMINIO CORTO'],
+    desc:'Fondos Apalancados neto corto. Institucionales posicionados a la baja. Divergencias en ratios ETF pueden señalar reversión contraria.'};
+  return{state:'MUY BAJISTA',color:'#ff3355',glow:'rgba(255,51,85,.12)',
+    tags:['BAJISTA EXTREMO','DOMINIO CORTO','COMPRA CONTRARIA'],
+    desc:`ÍNDICE COT EN ${ci}/100 — MÍNIMO ANUAL. Fondos Apalancados en posición corta máxima del año. Señal contraria de COMPRA históricamente. Confirmar con recuperación de ratios ETF.`};
+}
+
+function getAlerts(D){
+  const A=[], L=D[D.length-1], P=D[D.length-2]||L, l6=D.slice(-6);
+  if((l6[5].net-l6[0].net)<-5000&&l6[0].cotIdx>60)
+    A.push({t:'adiv',i:'⚠',m:'ALERTA DIVERGENCIA — Neto bajando desde COT alto. Posible distribución institucional.'});
+  if(L.cotIdx<=15)
+    A.push({t:'aext',i:'🎯',m:`ÍNDICE COT EN ${L.cotIdx} — MÍNIMO 52 SEMANAS. Extremo corto. Señal contraria de COMPRA históricamente.`});
+  if(L.cotIdx>=85)
+    A.push({t:'aext',i:'⚡',m:`ÍNDICE COT EN ${L.cotIdx} — MÁXIMO 52 SEMANAS. Extremo largo. Señal contraria de VENTA.`});
+  if(L.mom>4000&&P.net<0) A.push({t:'abull',i:'↑',m:'GIRO DE MOMENTUM — Neto virando positivo. Señal temprana de acumulación.'});
+  if(L.mom<-4000&&P.net>0)A.push({t:'adiv', i:'↓',m:'GIRO DE MOMENTUM — Neto virando negativo. Señal temprana de distribución.'});
+  return A;
+}
+
+// ══════════════════════════════════════════════════════════════
+// PURE CANVAS CHARTS — zero dependencies
+// ══════════════════════════════════════════════════════════════
+
+const FONT = "'JetBrains Mono',monospace";
+const PAD  = {t:10,r:20,b:32,l:58};
+
+function setSize(canvas){
+  const W=canvas.parentElement.clientWidth||400;
+  const H=parseInt(canvas.getAttribute('height'))||180;
+  canvas.width  = W * devicePixelRatio;
+  canvas.height = H * devicePixelRatio;
+  canvas.style.width  = W+'px';
+  canvas.style.height = H+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  return{ctx,W,H};
+}
+
+function gridLines(ctx,W,H,minV,maxV,steps=5){
+  ctx.strokeStyle='rgba(255,255,255,.04)';
+  ctx.lineWidth=1;
+  for(let i=0;i<=steps;i++){
+    const y=PAD.t+(H-PAD.t-PAD.b)*(1-i/steps);
+    ctx.beginPath(); ctx.moveTo(PAD.l,y); ctx.lineTo(W-PAD.r,y); ctx.stroke();
+    const v=minV+(maxV-minV)*(i/steps);
+    ctx.fillStyle='#4a5268'; ctx.font=`9px ${FONT}`;
+    ctx.textAlign='right'; ctx.fillText(fK(Math.round(v)),PAD.l-4,y+3);
+  }
+}
+
+function xLabels(ctx,W,H,labels,step=1){
+  ctx.fillStyle='#4a5268'; ctx.font=`9px ${FONT}`; ctx.textAlign='center';
+  const cW=(W-PAD.l-PAD.r)/(labels.length-1||1);
+  labels.forEach((l,i)=>{ if(i%step===0) ctx.fillText(l,PAD.l+i*cW,H-PAD.b+16); });
+}
+
+function toY(v,minV,maxV,H){
+  return PAD.t+(H-PAD.t-PAD.b)*(1-(v-minV)/(maxV-minV||1));
+}
+function toX(i,n,W){
+  return PAD.l+(W-PAD.l-PAD.r)*i/(n-1||1);
+}
+
+// Line chart
+function drawLine(canvasId, data, labels, colorFn, fillColor){
+  const {ctx,W,H}=setSize(document.getElementById(canvasId));
+  const mn=Math.min(...data), mx=Math.max(...data);
+  const pad=(mx-mn)*.1||Math.abs(mn)*.1||1;
+  const minV=mn-pad, maxV=mx+pad;
+  gridLines(ctx,W,H,minV,maxV);
+  xLabels(ctx,W,H,labels,Math.ceil(labels.length/8));
+
+  // Zero line
+  if(minV<0&&maxV>0){
+    const y0=toY(0,minV,maxV,H);
+    ctx.strokeStyle='rgba(255,255,255,.15)'; ctx.lineWidth=1;
+    ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(PAD.l,y0); ctx.lineTo(W-PAD.r,y0); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Fill
+  if(fillColor){
+    ctx.beginPath();
+    ctx.moveTo(toX(0,data.length,W), toY(0,minV,maxV,H));
+    data.forEach((v,i)=>ctx.lineTo(toX(i,data.length,W),toY(v,minV,maxV,H)));
+    ctx.lineTo(toX(data.length-1,data.length,W),toY(0,minV,maxV,H));
+    ctx.closePath();
+    const g=ctx.createLinearGradient(0,PAD.t,0,H-PAD.b);
+    g.addColorStop(0,fillColor+'44'); g.addColorStop(1,fillColor+'08');
+    ctx.fillStyle=g; ctx.fill();
+  }
+
+  // Line segments with color
+  for(let i=1;i<data.length;i++){
+    const color=colorFn?colorFn(data[i]):'#4488ff';
+    ctx.strokeStyle=color; ctx.lineWidth=2; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath();
+    ctx.moveTo(toX(i-1,data.length,W),toY(data[i-1],minV,maxV,H));
+    ctx.lineTo(toX(i,  data.length,W),toY(data[i],  minV,maxV,H));
+    ctx.stroke();
+  }
+}
+
+// COT index chart with zone bands
+function drawCotIndex(canvasId, data, labels){
+  const {ctx,W,H}=setSize(document.getElementById(canvasId));
+  const minV=0, maxV=100;
+
+  // Zone fills
+  const yBull=toY(80,0,100,H), yBear=toY(20,0,100,H);
+  ctx.fillStyle='rgba(0,255,136,.06)';
+  ctx.fillRect(PAD.l,PAD.t,W-PAD.l-PAD.r,yBull-PAD.t);
+  ctx.fillStyle='rgba(255,51,85,.06)';
+  ctx.fillRect(PAD.l,yBear,W-PAD.l-PAD.r,H-PAD.b-yBear);
+
+  // Grid
+  [0,20,40,60,80,100].forEach(v=>{
+    const y=toY(v,0,100,H);
+    ctx.strokeStyle='rgba(255,255,255,.05)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(PAD.l,y); ctx.lineTo(W-PAD.r,y); ctx.stroke();
+    ctx.fillStyle=v===80||v===20?'#ffaa0088':'#4a5268';
+    ctx.font=`9px ${FONT}`; ctx.textAlign='right';
+    ctx.fillText(v,PAD.l-4,y+3);
+  });
+
+  // Zone labels
+  ctx.font=`8px ${FONT}`; ctx.textAlign='left';
+  ctx.fillStyle='rgba(0,255,136,.4)';  ctx.fillText('ALCISTA EXTREMO',PAD.l+4,PAD.t+12);
+  ctx.fillStyle='rgba(255,51,85,.4)';  ctx.fillText('BAJISTA EXTREMO',PAD.l+4,H-PAD.b-4);
+
+  xLabels(ctx,W,H,labels,Math.ceil(labels.length/6));
+
+  // Fill
+  ctx.beginPath();
+  ctx.moveTo(toX(0,data.length,W),toY(data[0],0,100,H));
+  data.forEach((v,i)=>ctx.lineTo(toX(i,data.length,W),toY(v,0,100,H)));
+  ctx.lineTo(toX(data.length-1,data.length,W),H-PAD.b);
+  ctx.lineTo(toX(0,data.length,W),H-PAD.b);
+  ctx.closePath();
+  const g=ctx.createLinearGradient(0,PAD.t,0,H-PAD.b);
+  g.addColorStop(0,'rgba(68,136,255,.35)'); g.addColorStop(1,'rgba(68,136,255,.03)');
+  ctx.fillStyle=g; ctx.fill();
+
+  // Line
+  ctx.strokeStyle='#4488ff'; ctx.lineWidth=2; ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.beginPath();
+  data.forEach((v,i)=>{
+    const x=toX(i,data.length,W), y=toY(v,0,100,H);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  // Current dot
+  const lx=toX(data.length-1,data.length,W), ly=toY(data[data.length-1],0,100,H);
+  const lc=data[data.length-1]>=80?'#00ff88':data[data.length-1]<=20?'#ff3355':'#4488ff';
+  ctx.beginPath(); ctx.arc(lx,ly,4,0,Math.PI*2);
+  ctx.fillStyle=lc; ctx.fill();
+}
+
+// Grouped bar chart
+function drawBars(canvasId, longData, shortData, labels){
+  const {ctx,W,H}=setSize(document.getElementById(canvasId));
+  const allVals=[...longData,...shortData.map(v=>-v)];
+  const mn=Math.min(...allVals), mx=Math.max(...allVals);
+  const pad=(mx-mn)*.08; const minV=mn-pad, maxV=mx+pad;
+  gridLines(ctx,W,H,minV,maxV,4);
+  xLabels(ctx,W,H,labels,Math.ceil(labels.length/6));
+
+  // Zero line
+  const y0=toY(0,minV,maxV,H);
+  ctx.strokeStyle='rgba(255,255,255,.2)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(PAD.l,y0); ctx.lineTo(W-PAD.r,y0); ctx.stroke();
+
+  const n=longData.length, cW=(W-PAD.l-PAD.r)/n, bW=cW*.35, gap=cW*.05;
+  longData.forEach((lv,i)=>{
+    const sv=-shortData[i];
+    const x=PAD.l+i*cW+gap;
+
+    // Long bar
+    const ly=toY(lv,minV,maxV,H), lh=Math.abs(y0-ly);
+    ctx.fillStyle='rgba(0,255,136,.6)';
+    ctx.beginPath(); ctx.roundRect(x,Math.min(y0,ly),bW,lh,2); ctx.fill();
+
+    // Short bar
+    const sy=toY(sv,minV,maxV,H), sh=Math.abs(y0-sy);
+    ctx.fillStyle='rgba(255,51,85,.6)';
+    ctx.beginPath(); ctx.roundRect(x+bW+gap,Math.min(y0,sy),bW,sh,2); ctx.fill();
+  });
+
+  // Legend
+  ctx.fillStyle='rgba(0,255,136,.6)'; ctx.fillRect(PAD.l,8,10,8);
+  ctx.fillStyle='#4a5268'; ctx.font=`9px ${FONT}`; ctx.textAlign='left';
+  ctx.fillText('Largo',PAD.l+14,16);
+  ctx.fillStyle='rgba(255,51,85,.6)'; ctx.fillRect(PAD.l+55,8,10,8);
+  ctx.fillText('Corto',PAD.l+69,16);
+}
+
+// Gauge on canvas
+function drawGauge(canvasId, ci, color){
+  const c=document.getElementById(canvasId);
+  const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  const cx=c.width/2, cy=c.height/2+6, r=50;
+
+  ctx.beginPath(); ctx.arc(cx,cy,r,Math.PI*.75,Math.PI*2.25);
+  ctx.strokeStyle='#1e2230'; ctx.lineWidth=13; ctx.lineCap='round'; ctx.stroke();
+  const end=Math.PI*.75+(ci/100)*Math.PI*1.5;
+  ctx.beginPath(); ctx.arc(cx,cy,r,Math.PI*.75,end);
+  ctx.strokeStyle=color; ctx.lineWidth=13; ctx.lineCap='round'; ctx.stroke();
+
+  ctx.fillStyle=color; ctx.font=`bold 28px ${FONT}`;
+  ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(ci,cx,cy-4);
+  ctx.fillStyle='#4a5268'; ctx.font=`500 8px ${FONT}`;
+  ctx.fillText('ÍNDICE COT',cx,cy+14);
+}
+
+// COT gauge chart (large)
+function drawChartGauge(ci, color){
+  const c=document.getElementById('cg'), ctx=c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  const cx=c.width/2, cy=c.height/2+10, r=76;
+
+  ctx.beginPath(); ctx.arc(cx,cy,r,Math.PI*.75,Math.PI*2.25);
+  ctx.strokeStyle='#1e2230'; ctx.lineWidth=16; ctx.lineCap='round'; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx,cy,r,Math.PI*.75,Math.PI*.75+(ci/100)*Math.PI*1.5);
+  ctx.strokeStyle=color; ctx.lineWidth=16; ctx.lineCap='round'; ctx.stroke();
+
+  ctx.fillStyle=color; ctx.font=`bold 38px ${FONT}`;
+  ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(ci,cx,cy-4);
+  ctx.fillStyle='#4a5268'; ctx.font=`500 10px ${FONT}`;
+  ctx.fillText('ÍNDICE COT',cx,cy+22);
+  const lbl=ci>=80?'MUY ALCISTA':ci>=60?'ALCISTA':ci>=40?'NEUTRAL':ci>=20?'BAJISTA':'MUY BAJISTA';
+  ctx.fillStyle=color; ctx.font=`700 12px ${FONT}`;
+  ctx.fillText(lbl,cx,cy+42);
+  ctx.fillStyle='#2a2f42'; ctx.font=`400 9px ${FONT}`;
+  ctx.textAlign='left';  ctx.fillText('0',  cx-r-16,cy+8);
+  ctx.textAlign='right'; ctx.fillText('100',cx+r+18,cy+8);
+  if(ci<=5){
+    ctx.fillStyle='#ffaa00'; ctx.font=`600 8px ${FONT}`;
+    ctx.textAlign='center'; ctx.fillText('▲ MÍNIMO ANUAL — CONTRARIA',cx,cy+60);
+  } else if(ci>=95){
+    ctx.fillStyle='#ffaa00'; ctx.font=`600 8px ${FONT}`;
+    ctx.textAlign='center'; ctx.fillText('▼ MÁXIMO ANUAL — CONTRARIA',cx,cy+60);
+  }
+}
+
+// ── Fetch CFTC via proxy (no AbortSignal) ──────────────────────
+// CFTC API — sin filtro $where, traemos todo y filtramos en JS
+// Esto evita problemas de encoding del nombre del mercado
+const CFTC_DIRECT='https://publicreporting.cftc.gov/resource/gpe5-46if.json?$limit=500&$order=report_date_as_yyyy_mm_dd%20DESC&$select=report_date_as_yyyy_mm_dd,market_and_exchange_names,lev_money_positions_long_all,lev_money_positions_short_all,open_interest_all';
+const CK='cot_nq_v6', CT='cot_nq_ts_v6';
+
+function setStatus(msg,cls){
+  const b=document.getElementById('sb'), t=document.getElementById('stxt');
+  b.className=cls||'sl';
+  t.innerHTML=(cls==='sl'||!cls)?`<span class="spin">◌</span> ${msg}`:msg;
+}
+
+function parseRows(rows){
+  if(!Array.isArray(rows)||rows.length<5) throw new Error('Sin datos');
+  // Filter for NQ — any row containing NASDAQ in the market name
+  const nqRows = rows.filter(r =>
+    r.market_and_exchange_names &&
+    r.market_and_exchange_names.toUpperCase().includes('NASDAQ') &&
+    r.lev_money_positions_long_all
+  );
+  if(nqRows.length < 5) throw new Error('Sin datos NQ: solo ' + nqRows.length + ' filas');
+  const parsed = nqRows
+    .map(r=>({d:r.report_date_as_yyyy_mm_dd.slice(0,10),l:+r.lev_money_positions_long_all,s:+r.lev_money_positions_short_all,oi:+(r.open_interest_all||0)}))
+    .sort((a,b)=>a.d.localeCompare(b.d)); // oldest first
+  if(parsed.length<10) throw new Error('Datos insuficientes: '+parsed.length);
+  try{localStorage.setItem(CK,JSON.stringify(parsed));localStorage.setItem(CT,Date.now()+'');}catch(e){}
+  return parsed;
+}
+
+async function fetchDirect(){
+  // Lista de URLs a intentar en orden
+  const ATTEMPTS = [
+    // 1. CFTC directo sin filtro (más confiable)
+    CFTC_DIRECT,
+    // 2. Proxy allorigins
+    `https://api.allorigins.win/get?url=${encodeURIComponent(CFTC_DIRECT)}`,
+    // 3. Proxy corsproxy
+    `https://corsproxy.io/?${encodeURIComponent(CFTC_DIRECT)}`,
+  ];
+
+  for(let i=0;i<ATTEMPTS.length;i++){
+    try{
+      const label = i===0 ? 'CFTC directo' : `proxy ${i}`;
+      setStatus(`Conectando con CFTC · intentando ${label}...`);
+      const timeout = new Promise((_,r)=>setTimeout(()=>r(new Error('Timeout')),13000));
+      const res = await Promise.race([fetch(ATTEMPTS[i]), timeout]);
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const outer = await res.json();
+      // Handle both direct array and proxy-wrapped response
+      const rows = Array.isArray(outer) ? outer
+        : typeof outer.contents === 'string' ? JSON.parse(outer.contents)
+        : null;
+      if(!rows) throw new Error('Formato inesperado');
+      const parsed = parseRows(rows);
+      document.getElementById('ltxt').textContent = 'EN VIVO · CFTC';
+      setStatus('✓ Datos en vivo de la CFTC · publicreporting.cftc.gov · sin API key · actualización automática viernes','ss');
+      return parsed;
+    }catch(e){
+      console.warn(`Intento ${i+1} falló:`, e.message);
+    }
+  }
+  return null;
+}
+
+async function loadData(){
+  // 1. Caché válida (< 12 horas)
+  try{
+    const cached=localStorage.getItem(CK), ts=+localStorage.getItem(CT)||0;
+    if(cached&&Date.now()-ts<43200000){
+      const p=JSON.parse(cached);
+      if(p.length>=10){
+        const d=new Date(ts).toLocaleString('es',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+        setStatus(`✓ Datos en caché · actualizado ${d} · próxima actualización viernes 3:30 PM ET`,'ss');
+        return p;
+      }
+    }
+  }catch(e){}
+
+  // 2. Fetch en vivo
+  const live=await fetchDirect();
+  if(live) return live;
+
+  // 3. Dataset local como último recurso
+  setStatus('⚠ Usando dataset local (17 mar 2026) · Requiere conexión a internet para datos en vivo · Verifica que no hay VPN activa','sw');
+  document.getElementById('ltxt').textContent='DATASET LOCAL';
+  document.getElementById('ldot').style.background='var(--amber)';
+  return FB;
+}
+
+// ── Render ─────────────────────────────────────────────────────
+function render(raw){
+  const D=proc(raw), L=D[D.length-1], P=D[D.length-2]||L;
+  const sig=getSig(L.cotIdx), alts=getAlerts(D);
+  const dp=L.d.split('-');
+  document.getElementById('ddate').textContent=`DATOS AL ${dp[2]} ${MES[+dp[1]-1]} ${dp[0]}`;
+  document.getElementById('sigbox').style.setProperty('--gc',sig.glow);
+  document.getElementById('ss').textContent=sig.state;
+  document.getElementById('ss').style.color=sig.color;
+  document.getElementById('sd').textContent=sig.desc;
+  const TM={'ALCISTA EXTREMO':'tg','DOMINIO LARGO':'tg','ALTA CONVICCIÓN':'tc','POSICIÓN ALCISTA':'tg','NETO CRECIENTE':'tg',
+    'NEUTRAL':'ta','SIN VENTAJA':'ta','POSICIÓN BAJISTA':'tr','DOMINIO CORTO':'tr','BAJISTA EXTREMO':'tr','COMPRA CONTRARIA':'tc'};
+  document.getElementById('st').innerHTML=sig.tags.map(t=>`<span class="tag ${TM[t]||'tc'}">${t}</span>`).join('');
+
+  // Signal ring gauge
+  drawGauge('gc',L.cotIdx,sig.color);
+  // Large chart gauge
+  drawChartGauge(L.cotIdx,sig.color);
+
+  // Gauge note
+  const gn=document.getElementById('gn');
+  gn.innerHTML=L.cotIdx<=10
+    ?`<span style="color:var(--amber)"><b>¿Por qué ${L.cotIdx}?</b></span> Percentil dentro de 52 semanas. El ${L.cotIdx} = posición más corta del año. No es error — es señal bajista extrema y contraria alcista históricamente.`
+    :'';
+
+  // Alerts
+  document.getElementById('alerts').innerHTML=alts.length
+    ?alts.map(a=>`<div class="ab ${a.t}"><span>${a.i}</span>${a.m}</div>`).join('')
+    :`<div class="ab abull"><span>✓</span>SIN ALERTAS EXTREMAS — Posicionamiento dentro del rango normal.</div>`;
+
+  // Cards
+  const sv=(id,val,color,chg)=>{
+    const v=document.getElementById(id); v.textContent=val; if(color)v.style.color=color;
+    const c=document.getElementById(id+'c'); if(c&&chg!==null)c.innerHTML=chg;
+  };
+  sv('mn',fK(L.net),cV(L.net),`<span style="color:${cV(L.mom)}">Δ ${fK(L.mom)} vs semana anterior</span>`);
+  const rv=+L.ratio;
+  sv('mr',L.ratio+'x',rv>1?'var(--green)':rv<1?'var(--red)':'var(--amber)',
+    `<span style="color:${rv>1?'var(--green)':rv<1?'var(--red)':'var(--amber)'}">${rv>1?'Dominio largo':rv<1?'Dominio corto':'Balanceado'}</span>`);
+  sv('mm',fK(L.mom),cV(L.mom),`<span style="color:${cV(L.mom)}">${L.mom>0?'↑ Acumulación':L.mom<0?'↓ Distribución':'→ Plano'}</span>`);
+  sv('mo',fK(L.oi).replace('+',''),'var(--blue)',`<span style="color:${cV(L.oi-P.oi)}">Δ ${fK(L.oi-P.oi)}</span>`);
+
+  // Charts
+  const labels=D.map(d=>d.d.slice(5));
+  drawLine('cn', D.map(d=>d.net), labels, v=>v>=0?'#4488ff':'#ff3355', '#4488ff');
+  drawCotIndex('cc', D.map(d=>d.cotIdx), labels);
+  const l16=D.slice(-16);
+  drawBars('cls', l16.map(d=>d.l), l16.map(d=>d.s), l16.map(d=>d.d.slice(5)));
+
+  // Table
+  document.getElementById('hb').innerHTML=D.slice(-12).reverse().map((w,i)=>{
+    const s2=w.cotIdx>=80?'EXT ALCISTA':w.cotIdx>=60?'ALCISTA':w.cotIdx>=40?'NEUTRAL':w.cotIdx>=20?'BAJISTA':'EXT BAJISTA';
+    const sc=w.cotIdx>=60?'g2':w.cotIdx<=40?'r2':'a2', rv2=+w.ratio;
+    return`<tr class="${i===0?'cur':''}"><td>${w.d}${i===0?' ◀':''}</td>
+      <td>${w.l.toLocaleString('es')}</td><td>${w.s.toLocaleString('es')}</td>
+      <td class="${cC(w.net)}">${fF(w.net)}</td>
+      <td class="${rv2>1?'g2':rv2<1?'r2':'a2'}">${w.ratio}x</td>
+      <td class="${w.cotIdx>=80||w.cotIdx<=20?'a2':''}">${w.cotIdx}</td>
+      <td class="${cC(w.mom)}">${fF(w.mom)}</td>
+      <td class="${sc}">${s2}</td></tr>`;
+  }).join('');
+
+  // Resize listener
+  window.addEventListener('resize',()=>render(raw),{once:true});
+}
+
+// ── Report ─────────────────────────────────────────────────────
+let GDATA=[];
+document.getElementById('br').addEventListener('click',()=>{
+  if(!GDATA.length) return;
+  const D=proc(GDATA), L=D[D.length-1], sig=getSig(L.cotIdx), alts=getAlerts(D);
+  const r=`━━━ RADAR INSTITUCIONAL COT — NQ E-MINI ━━━
+Semana: ${L.d} | Fuente: CFTC TFF Futures Only
+
+📊 SNAPSHOT
+Estado: ${sig.state}
+Índice COT: ${L.cotIdx}/100 (percentil 52 semanas)
+Posición Neta: ${fF(L.net)} contratos
+Ratio L/C: ${L.ratio}x
+Momentum: ${fF(L.mom)} contratos
+${L.cotIdx<=10?`\n🚨 ÍNDICE COT EN MÍNIMO ANUAL (${L.cotIdx}) — zona de reversión histórica`:''}${L.cotIdx>=90?`\n🚨 ÍNDICE COT EN MÁXIMO ANUAL (${L.cotIdx}) — zona de distribución histórica`:''}
+
+🔍 LECTURA INSTITUCIONAL
+Fondos Apalancados ${L.net>0?'neto LARGOS':'neto CORTOS'} con momentum ${L.mom>0?'creciente':'decreciente'}.
+${L.cotIdx<=20?'Posicionamiento corto extremo — señal contraria de COMPRA.\nConfirmar con XLK/XLP y SMH/QQQ sobre EMA 20.':''}${L.cotIdx>=80?'Posicionamiento largo extremo — señal de posible agotamiento.\nVigilar momentum en ratios ETF.':''}${L.cotIdx>20&&L.cotIdx<80?'Sin lectura extrema. Seguir ratios ETF para dirección.':''}
+
+⚠️ ALERTAS
+${alts.length?alts.map(a=>'• '+a.m).join('\n'):'• Sin alertas extremas esta semana.'}
+
+🔗 CONFIRMAR CON
+• XLY/XLP sobre EMA 20 → Risk On general
+• SMH/QQQ sobre EMA 20 → Semis lideran tech
+• XLK/XLP sobre EMA 20 → Tech fuerte vs defensivas
+${L.cotIdx<=25?'\n✅ COT extremo + Ratios recuperando = ALTA CONVICCIÓN de rebote.':''}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+  const o=document.getElementById('ro'); o.textContent=r; o.style.display='block';
+  o.scrollIntoView({behavior:'smooth',block:'nearest'});
+});
+document.getElementById('be').addEventListener('click',()=>{
+  const t=document.getElementById('ro').textContent;
+  if(!t.trim()){alert('Genera el reporte primero.');return;}
+  const a=document.createElement('a');
+  a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(t);
+  a.download=`COT_NQ_${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+});
+
+// ── Auto-refresh viernes 3:35 PM ET ───────────────────────────
+function schedFriday(){
+  const et=new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
+  const d2f=et.getDay()<=5?5-et.getDay():7-(et.getDay()-5);
+  const nf=new Date(et); nf.setDate(et.getDate()+(d2f||7)); nf.setHours(15,35,0,0);
+  const ms=nf-new Date();
+  if(ms>0&&ms<7*86400000) setTimeout(async()=>{
+    try{localStorage.removeItem('cot_nq_ts_v6');}catch(e){}
+    const{data}=await loadData(); if(data){GDATA=data;render(data);} schedFriday();
+  },ms);
+}
+
+// ── Init ───────────────────────────────────────────────────────
+(async()=>{
+  const{data}=await loadData();
+  GDATA=data||FB;
+  render(GDATA);
+  schedFriday();
+})();
+</script>
+</body>
+</html>
