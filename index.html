@@ -529,8 +529,7 @@ function drawChartGauge(ci, color){
 // Esto evita problemas de encoding del nombre del mercado
 // URL simplificada — sin $select para evitar error 400
 // La CFTC devuelve todos los campos, filtramos los que necesitamos en JS
-const CFTC_DIRECT='https://publicreporting.cftc.gov/resource/gpe5-46if.json?$limit=500&$order=report_date_as_yyyy_mm_dd+DESC';
-const CK='cot_nq_v6', CT='cot_nq_ts_v6';
+const CFTC_DIRECT='https://publicreporting.cftc.gov/resource/gpe5-46if.json?$limit=500&$order=report_date_as_yyyy_mm_dd+DESC';const CK='cot_nq_v6', CT='cot_nq_ts_v6';
 
 function setStatus(msg,cls){
   const b=document.getElementById('sb'), t=document.getElementById('stxt');
